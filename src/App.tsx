@@ -127,8 +127,9 @@ export default function App() {
         <Section num="04" label="PROJE LABORATUVARI">
           <div>
             <ProjectCard title="Ugra" status="Live" link="https://ugra.frax.tr/" />
-            <ProjectCard title="Mera" status="Cooking" />
-            <ProjectCard title="Xxxx" status="Upcoming" />
+            <ProjectCard title="Mera" status="Developing" />
+            <ProjectCard title="Vira" status="Design" />
+            <ProjectCard title="Haslet" status="Testing" />
           </div>
         </Section>
 
