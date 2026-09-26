@@ -1,3 +1,47 @@
+# minimalist-website-design
+
+A minimalist website built with React, TypeScript, and Vite.
+
+## Gereksinimler
+
+- **Node.js** ≥ 18 (Vite 7 ve TypeScript ~5.9 gerektirir)
+- **npm** ≥ 9
+
+## Kurulum
+
+```bash
+npm install
+```
+
+## Komutlar
+
+| Komut | Açıklama |
+|-------|----------|
+| `npm run dev` | Geliştirme sunucusunu başlatır (HMR ile) |
+| `npm run build` | TypeScript derler ve üretim çıktısı oluşturur (`dist/`) |
+| `npm run preview` | `dist/` klasörünü yerel sunucuda önizler |
+| `npm run lint` | ESLint ile kod kalitesi denetimi yapar |
+
+## Proje Yapısı
+
+```
+minimalist-website-design/
+├── public/               # Statik varlıklar (favicon, görseller)
+│   ├── favicon.svg
+│   └── frax-logo.png
+├── src/                  # Uygulama kaynak kodu
+│   ├── main.tsx          # Uygulama giriş noktası
+│   ├── App.tsx           # Kök bileşen
+│   ├── design.ts         # Tasarım sistemi / token tanımları
+│   └── index.css         # Global stiller (Tailwind)
+├── index.html            # HTML şablonu
+├── vite.config.ts        # Vite yapılandırması
+├── tsconfig.json         # TypeScript yapılandırması
+└── package.json          # Bağımlılıklar ve scriptler
+```
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
