@@ -2,11 +2,12 @@ import { useEffect, useRef } from 'react';
 import { DESIGN_HTML } from './design';
 
 /**
- * Frax Labs site. The visual design is the Claude Design export (src/design.ts),
- * rendered as-is; this component re-implements the design's vanilla-JS motion
- * layer — live clock, scroll reveals, count-ups, heading splits, hero entrance,
- * scroll progress + hero parallax, magnetic buttons, card tilt, smooth-scroll
- * anchors and the declarative `style-hover` interactions.
+ * Alperen Sevinç — Personal Portfolio
+ * Re-implements the design's vanilla-JS motion layer:
+ * scroll reveals, count-ups, heading splits, hero entrance,
+ * scroll progress + hero parallax, magnetic buttons, card tilt,
+ * smooth-scroll anchors, declarative style-hover interactions,
+ * and TR/EN language toggle.
  */
 export default function App() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -22,17 +23,37 @@ export default function App() {
     const observers: IntersectionObserver[] = [];
     let raf = 0;
 
-    // --- live clock ---
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const tick = () => {
-      const el = root.querySelector('#sync-clock');
-      if (el) {
-        const d = new Date();
-        el.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-      }
+    // --- TR/EN language toggle ---
+    const portfolioRoot = root.querySelector<HTMLElement>('#portfolio-root');
+    const langToggle = root.querySelector<HTMLButtonElement>('#lang-toggle');
+    const savedLang = (localStorage.getItem('portfolio-lang') as 'tr' | 'en') || 'tr';
+
+    const applyLang = (lang: 'tr' | 'en') => {
+      if (!portfolioRoot) return;
+      portfolioRoot.setAttribute('lang', lang);
+      q<HTMLElement>('.tr-text').forEach((el) => {
+        el.style.display = lang === 'tr' ? '' : 'none';
+      });
+      q<HTMLElement>('.en-text').forEach((el) => {
+        el.style.display = lang === 'en' ? '' : 'none';
+      });
+      localStorage.setItem('portfolio-lang', lang);
     };
-    tick();
-    const clock = window.setInterval(tick, 1000);
+
+    applyLang(savedLang);
+
+    let currentLang = savedLang;
+    if (langToggle) {
+      const toggleFn = () => {
+        currentLang = currentLang === 'tr' ? 'en' : 'tr';
+        applyLang(currentLang);
+      };
+      langToggle.addEventListener('click', toggleFn);
+      timers.push(0); // placeholder to track cleanup
+      // store cleanup separately
+      const originalCleanup = () => langToggle.removeEventListener('click', toggleFn);
+      (langToggle as any).__cleanup = originalCleanup;
+    }
 
     // --- count-up numbers ---
     const countUp = (el: HTMLElement) => {
@@ -98,58 +119,6 @@ export default function App() {
       });
     };
 
-    // --- terminal boot typing ---
-    const typeTerminal = () => {
-      const out = root.querySelector<HTMLElement>('#terminal-out');
-      if (!out || (out as any).__typing) return;
-      (out as any).__typing = true;
-      const lines: Array<[string, string]> = [
-        ['$ ', '#7C5CFF'], ['booting frax_labs.core ...\n', '#cde6ff'],
-        ['> ', '#3DDC97'], ['location  : İSTANBUL // TR\n', '#cde'],
-        ['> ', '#3DDC97'], ['founded   : 2026 // 2 ortak\n', '#cde'],
-        ['> ', '#3DDC97'], ['status    : ACTIVE_ALPHA\n', '#cde'],
-        ['> ', '#3DDC97'], ['loading projects ........ ', '#cde'], ['[OK]\n', '#3DDC97'],
-        ['  ', '#cde'], ['Ugra · Slotis · Milli Tavır · +5\n', '#8B6CFF'],
-        ['> ', '#3DDC97'], ['vision    : otonom dijital ekosistem\n', '#cde'],
-        ['> ', '#3DDC97'], ['ready_', '#fff'],
-      ];
-      out.innerHTML = '';
-      let li = 0;
-      let ci = 0;
-      let span: HTMLElement | null = null;
-      const cursor = document.createElement('span');
-      cursor.textContent = '█';
-      cursor.style.color = '#7C5CFF';
-      cursor.style.animation = 'blink 1s step-end infinite';
-      const type = () => {
-        if (!out.isConnected) {
-          (out as any).__typing = false;
-          return;
-        }
-        if (li >= lines.length) {
-          out.appendChild(cursor);
-          return;
-        }
-        const [txt, color] = lines[li];
-        if (ci === 0) {
-          span = document.createElement('span');
-          span.style.color = color;
-          out.appendChild(span);
-        }
-        span!.textContent += txt[ci];
-        ci++;
-        if (ci >= txt.length) {
-          li++;
-          ci = 0;
-          timers.push(window.setTimeout(type, txt.endsWith('\n') ? 120 : 20));
-        } else {
-          timers.push(window.setTimeout(type, 12));
-        }
-      };
-      timers.push(window.setTimeout(type, 500));
-    };
-    typeTerminal();
-
     // --- hero headline entrance ---
     const revealHero = () => {
       q<HTMLElement>('[data-hero-line]').forEach((el) => {
@@ -157,11 +126,12 @@ export default function App() {
         (el as any).__hl = 1;
         el.style.opacity = '0';
         el.style.transform = 'translateY(110%)';
+        el.style.transition = 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
         const d = parseInt(el.getAttribute('data-hd') || '0', 10);
         const t = window.setTimeout(() => {
           el.style.opacity = '1';
           el.style.transform = 'translateY(0)';
-        }, 90 + d);
+        }, 120 + d);
         timers.push(t);
       });
     };
@@ -317,13 +287,16 @@ export default function App() {
     });
 
     return () => {
-      clearInterval(clock);
       timers.forEach((t) => clearTimeout(t));
       if (raf) cancelAnimationFrame(raf);
       observers.forEach((o) => o.disconnect());
       anchorHandlers.forEach(({ el, fn }) => el.removeEventListener('click', fn));
+      if (langToggle && (langToggle as any).__cleanup) {
+        (langToggle as any).__cleanup();
+      }
     };
   }, []);
 
   return <div ref={rootRef} dangerouslySetInnerHTML={{ __html: DESIGN_HTML }} />;
 }
+
